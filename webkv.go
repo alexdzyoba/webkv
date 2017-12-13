@@ -15,10 +15,11 @@ import (
 func main() {
 	port := flag.Int("port", 8080, "Port to listen on")
 	addrsStr := flag.String("addrs", "", "(Required) Redis addrs (may be delimited by ;)")
-	ttl := flag.Duration("ttl", time.Second*15, "Service TTL")
+	ttl := flag.Duration("ttl", time.Second*15, "Service TTL check duration")
 	flag.Parse()
 
 	if len(*addrsStr) == 0 {
+		fmt.Fprintln(os.Stderr, "addrs argument is required")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
