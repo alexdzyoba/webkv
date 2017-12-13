@@ -7,7 +7,7 @@ import (
 
 func (s *Service) UpdateTTL(check func() (bool, error)) {
 	ticker := time.NewTicker(s.TTL / 2)
-	for _ = range ticker.C {
+	for range ticker.C {
 		s.update(check)
 	}
 }
