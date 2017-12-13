@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dzeban/webkv/service"
+	"github.com/alexdzyoba/webkv/service"
 )
 
 func main() {
