@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dzeban/go-service/service"
+	"github.com/dzeban/webkv/service"
 )
 
 func main() {
