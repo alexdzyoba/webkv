@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-redis/redis"
 	consul "github.com/hashicorp/consul/api"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Service struct {
@@ -13,6 +14,7 @@ type Service struct {
 	Port        int
 	RedisClient redis.UniversalClient
 	ConsulAgent *consul.Agent
+	Metrics     Metrics
 }
 
 type Metrics struct {
@@ -27,6 +29,15 @@ func New(addrs []string, ttl time.Duration, port int) (*Service, error) {
 	s.RedisClient = redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs: addrs,
 	})
+
+	s.Metrics.RedisRequests = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "redis_requests_total",
+			Help: "How many Redis requests processed, partitioned by status",
+		},
+		[]string{"status"},
+	)
+	prometheus.MustRegister(s.Metrics.RedisRequests)
 
 	ok, err := s.Check()
 	if !ok {

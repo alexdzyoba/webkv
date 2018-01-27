@@ -15,7 +15,9 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Key not found", http.StatusNotFound)
 		status = 404
+		s.Metrics.RedisRequests.WithLabelValues("fail").Inc()
 	}
+	s.Metrics.RedisRequests.WithLabelValues("success").Inc()
 
 	fmt.Fprint(w, val)
 	log.Printf("url=\"%s\" remote=\"%s\" key=\"%s\" status=%d\n",
