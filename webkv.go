@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/alexdzyoba/webkv/service"
@@ -32,7 +33,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.Handle("/", s)
+	http.Handle("/", prometheus.InstrumentHandler("webkv", s))
 	http.Handle("/metrics", promhttp.Handler())
 
 	l := fmt.Sprintf(":%d", *port)
