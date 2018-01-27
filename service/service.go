@@ -18,7 +18,8 @@ type Service struct {
 }
 
 type Metrics struct {
-	RedisRequests *prometheus.CounterVec
+	RedisRequests  *prometheus.CounterVec
+	RedisDurations prometheus.Summary
 }
 
 func New(addrs []string, ttl time.Duration, port int) (*Service, error) {
@@ -38,6 +39,14 @@ func New(addrs []string, ttl time.Duration, port int) (*Service, error) {
 		[]string{"status"},
 	)
 	prometheus.MustRegister(s.Metrics.RedisRequests)
+
+	s.Metrics.RedisDurations = prometheus.NewSummary(
+		prometheus.SummaryOpts{
+			Name:       "redis_request_durations",
+			Help:       "Redis requests latencies in seconds",
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
+		})
+	prometheus.MustRegister(s.Metrics.RedisDurations)
 
 	ok, err := s.Check()
 	if !ok {

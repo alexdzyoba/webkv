@@ -5,12 +5,18 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	status := 200
 
 	key := strings.Trim(r.URL.Path, "/")
+
+	timer := prometheus.NewTimer(s.Metrics.RedisDurations)
+	defer timer.ObserveDuration()
+
 	val, err := s.RedisClient.Get(key).Result()
 	if err != nil {
 		http.Error(w, "Key not found", http.StatusNotFound)
