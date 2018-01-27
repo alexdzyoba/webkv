@@ -31,6 +31,20 @@ func New(addrs []string, ttl time.Duration, port int) (*Service, error) {
 		Addrs: addrs,
 	})
 
+	ok, err := s.Check()
+	if !ok {
+		return nil, err
+	}
+
+	s.metricsRegister()
+	s.consulRegister()
+
+	go s.UpdateTTL(s.Check)
+
+	return s, nil
+}
+
+func (s *Service) metricsRegister() {
 	s.Metrics.RedisRequests = prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "redis_requests_total",
@@ -47,15 +61,12 @@ func New(addrs []string, ttl time.Duration, port int) (*Service, error) {
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		})
 	prometheus.MustRegister(s.Metrics.RedisDurations)
+}
 
-	ok, err := s.Check()
-	if !ok {
-		return nil, err
-	}
-
+func (s *Service) consulRegister() {
 	c, err := consul.NewClient(consul.DefaultConfig())
 	if err != nil {
-		return nil, err
+		panic("Failed to connect to Consul agent")
 	}
 	s.ConsulAgent = c.Agent()
 
@@ -68,9 +79,6 @@ func New(addrs []string, ttl time.Duration, port int) (*Service, error) {
 	}
 
 	if err := s.ConsulAgent.ServiceRegister(serviceDef); err != nil {
-		return nil, err
+		panic("Failed to register Service")
 	}
-	go s.UpdateTTL(s.Check)
-
-	return s, nil
 }
