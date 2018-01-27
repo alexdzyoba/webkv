@@ -10,13 +10,19 @@ import (
 type Service struct {
 	Name        string
 	TTL         time.Duration
+	Port        int
 	RedisClient redis.UniversalClient
 	ConsulAgent *consul.Agent
 }
 
-func New(addrs []string, ttl time.Duration) (*Service, error) {
+type Metrics struct {
+	RedisRequests *prometheus.CounterVec
+}
+
+func New(addrs []string, ttl time.Duration, port int) (*Service, error) {
 	s := new(Service)
 	s.Name = "webkv"
+	s.Port = port
 	s.TTL = ttl
 	s.RedisClient = redis.NewUniversalClient(&redis.UniversalOptions{
 		Addrs: addrs,
@@ -35,6 +41,7 @@ func New(addrs []string, ttl time.Duration) (*Service, error) {
 
 	serviceDef := &consul.AgentServiceRegistration{
 		Name: s.Name,
+		Port: s.Port,
 		Check: &consul.AgentServiceCheck{
 			TTL: s.TTL.String(),
 		},
