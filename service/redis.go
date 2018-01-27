@@ -14,7 +14,10 @@ func (s *Service) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	key := strings.Trim(r.URL.Path, "/")
 
-	timer := prometheus.NewTimer(s.Metrics.RedisDurations)
+	timer := prometheus.NewTimer(prometheus.ObserverFunc(func(v float64) {
+		us := v * 1000000 // make microseconds
+		s.Metrics.RedisDurations.Observe(us)
+	}))
 	defer timer.ObserveDuration()
 
 	val, err := s.RedisClient.Get(key).Result()

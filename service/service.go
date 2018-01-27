@@ -43,7 +43,7 @@ func New(addrs []string, ttl time.Duration, port int) (*Service, error) {
 	s.Metrics.RedisDurations = prometheus.NewSummary(
 		prometheus.SummaryOpts{
 			Name:       "redis_request_durations",
-			Help:       "Redis requests latencies in seconds",
+			Help:       "Redis requests latencies in microseconds",
 			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		})
 	prometheus.MustRegister(s.Metrics.RedisDurations)
